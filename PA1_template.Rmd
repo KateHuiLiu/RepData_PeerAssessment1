@@ -1,25 +1,96 @@
 ---
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
+title: "Reproducible Research - Activity Data"
+author: "Kate Liu"
+date: "Friday, March 13, 2015"
+output: html_document
 ---
 
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
 
-## Loading and preprocessing the data
+## Part 1: Load and aggregate data with missing data
+### Loading and preprocessing the data:
+Loading data of activity from .csv file
 
+```{r}
+library(ggplot2)
+activityData <- read.csv("./repdata-data-activity/activity.csv")
+head(activityData)
+```
 
+### Calculate the mean total number of steps taken per day
+R code for calculating the total number of steps per day, and assign colum names accordingly. 
 
-## What is mean total number of steps taken per day?
+```{r, echo=TRUE}
+totalStepsPerDay <- aggregate(activityData$steps, by=list(activityData$date), FUN=sum)
+colnames(totalStepsPerDay) <- c("date", "totalSteps")
+head(totalStepsPerDay)
+```
 
+The daily steps density histogram is shown below:
+```{r, echo=TRUE}
+qplot(date, totalSteps, data = totalStepsPerDay, geom = "histogram", stat = "identity")
+```
 
+### Calculate average daily activity pattern
+R code for calculating the average daily activity over intervals, and assign colum names accordingly. 
 
-## What is the average daily activity pattern?
+```{r, echo=TRUE}
+dailyActivity <- aggregate(activityData$steps, by=list(activityData$interval), FUN=mean, na.rm = TRUE)
+colnames(dailyActivity) <- c("interval", "dailyAvgSteps")
+head(dailyActivity)
+```
 
+The interval series of daily average steps is shown below:
+```{r, echo=TRUE}
+plot(dailyActivity, type = "l")
+```
 
+## Part 2: Load and aggregate data with missing data filled in
+### Calculate the mean total number of steps taken per day
+R code for getting NA data filled in:
+```{r, echo=TRUE}
+missingActivityData<- activityData[is.na(activityData$steps),]
+originalActivityData<- activityData[!is.na(activityData$steps),]
+filledActivityData<- merge(missingActivityData, dailyActivity, by="interval" )
+filledActivityData<- filledActivityData[,c(1,3,4)]
+colnames(filledActivityData)<-c("interval","date","steps")
+newActivityData <- rbind(filledActivityData, originalActivityData)
+```
 
-## Imputing missing values
+R code for calculating the total number of steps per day, and assign colum names accordingly. 
 
+```{r, echo=TRUE}
+newtotalStepsPerDay <- aggregate(newActivityData$steps, by=list(newActivityData$date), FUN=sum)
+colnames(newtotalStepsPerDay) <- c("Date", "TotalSteps")
+head(newtotalStepsPerDay)
+```
 
+The daily steps density histogram is shown below:
+```{r, echo=TRUE}
+qplot(Date, TotalSteps, data = newtotalStepsPerDay, geom = "histogram", stat = "identity")
+```
 
-## Are there differences in activity patterns between weekdays and weekends?
+### Calculate average daily activity pattern
+R code for calculating the average daily activity over intervals, and assign colum names accordingly. 
+
+```{r, echo=TRUE}
+newdailyActivity <- aggregate(newActivityData$steps, by=list(newActivityData$interval), FUN=mean, na.rm = TRUE)
+colnames(newdailyActivity) <- c("Interval", "DailyAvgSteps")
+head(newdailyActivity)
+```
+
+The interval series plot of daily average steps is shown below:
+```{r, echo=TRUE}
+plot(newdailyActivity, type = "l")
+```
+
+## Part 3: Compare the difference between weekdays and weekends
+R code to calculate the weekdays daily activity:
+```{r, echo=TRUE}
+plot(dailyActivity, type = "l")
+```
+
+The interval series plot of weekdays daily average steps is shown below:
+```{r, echo=TRUE}
+
+```
